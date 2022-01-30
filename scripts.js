@@ -1,91 +1,135 @@
 const jugadas = ["Rock", "Paper", "Scissors"] 
-let puntosHuman = 0;
-let puntosMachine = 0; 
-
+const humanScore = document.getElementById("human-score");
+const machineScore = document.getElementById("machine-score"); 
+let ronda = 0; 
+let enEjecucion = true; 
 function computerPlay() 
 {
     const num = Math.round(Math.random()* (jugadas.length - 1));
     return jugadas[num];
 }
 
-function singleRound(playerSelection, computerSelection) 
+const singleRound = (playerSelection, computerSelection) =>  
 {
     
-    //Si selecciona roca
-    if (playerSelection == "Rock" && computerSelection == "Paper") 
-    {
-        puntosMachine++;
-        return `You Lose! ${computerSelection} beats ${playerSelection}` 
-    }
-
-    if (playerSelection == "Rock" && computerSelection == "Scissors") 
-    {
-        puntosHuman++;
-        return `You Win! ${playerSelection} beats ${computerSelection}` 
-    }
-
-    if (playerSelection == "Rock" && computerSelection == "Rock") 
-    {
-        return `Its a tie. You played ${playerSelection} and computer played ${computerSelection}` 
-    }
     
-    //Si selecciono papel
-
-    if (playerSelection == "Paper" && computerSelection == "Scissors") 
+    //Situaciones en las que voy a perder
+    if ( 
+        (playerSelection == "Rock" && computerSelection == "Paper") || 
+        (playerSelection == "Paper" && computerSelection == "Scissors") ||
+        (playerSelection == "Scissors" && computerSelection == "Rock"))
     {
-        puntosMachine++;
-        return `You Lose! ${computerSelection} beats ${playerSelection}` 
+        machineScore.value++; 
+        let string = `You Lose! Computer's ${computerSelection} beats your ${playerSelection}`;
+        mostrarResultado(string, "loss");  
+
+    }
+    //Situaciones en las que voy a ganar
+    else if (
+        (playerSelection == "Rock" && computerSelection == "Scissors") || (playerSelection == "Paper" && computerSelection == "Rock") || 
+        (playerSelection == "Scissors" && computerSelection == "Paper")) 
+    {
+        humanScore.value++;
+        let string = `You Win! Your ${playerSelection} beats Computer's ${computerSelection}`;
+        mostrarResultado(string, "win"); 
+    }
+    else if (playerSelection == computerSelection) 
+    {
+        let string = `Its a tie. You played ${playerSelection} and computer played ${computerSelection}`; 
+        mostrarResultado(string, "tie"); 
     }
 
-    if (playerSelection == "Paper" && computerSelection == "Rock") 
+    ronda++; 
+    if (humanScore.value == 5) 
     {
-        puntosHuman++;
-        return `You Win! ${playerSelection} beats ${computerSelection}` 
+       mostrarGanador("humano"); 
     }
-
-    if (playerSelection == "Paper" && computerSelection == "Paper") 
+    else if (machineScore.value == 5) 
     {
-        return `Its a tie. You played ${playerSelection} and computer played ${computerSelection}` 
+        mostrarGanador("maquina");
     }
-    //Si elijo scissors
-
-    if (playerSelection == "Scissors" && computerSelection == "Rock") 
-    {
-        puntosMachine++;
-        return `You Lose! ${computerSelection} beats ${playerSelection}` 
-    }
-
-    if (playerSelection == "Scissors" && computerSelection == "Paper") 
-    {
-        puntosHuman++;
-        return `You Win! ${playerSelection} beats ${computerSelection}` 
-    }
-
-    if (playerSelection == "Scissors" && computerSelection == "Scissors") 
-    {
-        return `Its a tie. You played ${playerSelection} and computer played ${computerSelection}` 
-    }
-
 }
 
 
-function game() 
+const mostrarGanador = (ganador) =>  
 {
-    for (let i = 1; i <= 5; i++) 
-    {
-        let human = window.prompt("What do you want to play?");
-        console.log(singleRound(human, computerPlay()));
-    }
-    if (puntosMachine > puntosHuman) 
-        {
-            console.log("Computer wins!")    
-        }
-        else if (puntosHuman > puntosMachine) 
-        {
-            console.log("Human wins")
-        }
-        else 
-        {
-            console.log("Its a tie lmao")
-        }
+   const container = document.getElementById("contenedor");
+   const div = document.createElement("div");
+   div.setAttribute("class", "alert alert-info text-center");
+    div.setAttribute("id", "ganador")
+   let string = `The winner is: ${ganador}!`
+   div.innerText = string; 
+   container.appendChild(div);
+   enEjecucion = false; 
 }
+
+
+
+const accionPlayer = (event) => 
+{
+    if(enEjecucion) {
+    const boton = event.target; 
+    const texto = boton.innerText; 
+    singleRound(texto, computerPlay());
+    ronda++;  
+    }
+} 
+
+const mostrarResultado = (string, status) => 
+{
+    const cuadro = document.getElementById("results");
+    const div = document.createElement("div");
+    div.setAttribute("id","resultado");
+    div.innerText = string; 
+    if (status == "win") 
+    {
+        div.setAttribute("class", "alert alert-success text-center");
+        
+    } 
+    else if (status =="loss") 
+    {
+        div.setAttribute("class", "alert alert-danger text-center");
+
+    }
+    else if (status =="tie") 
+    {
+        div.setAttribute("class", "alert alert-warning text-center");
+    }
+    
+    if (ronda == 0) 
+    {
+        cuadro.appendChild(div);
+    }
+    else 
+    {
+        const temp = document.getElementById("resultado");
+        cuadro.replaceChild(div,temp);
+    }
+}
+
+const reiniciar = () => 
+{ 
+    ronda = 0; 
+    humanScore.value = 0;
+    machineScore.value = 0;
+
+    const resultado = document.getElementById("resultado");
+    resultado.remove();
+    const ganador = document.getElementById("ganador");
+    ganador.remove();
+
+
+
+    enEjecucion = true; 
+   
+}
+const main = () => 
+{
+
+    document.getElementById("rock").addEventListener("click", accionPlayer);
+    document.getElementById("scissors").addEventListener("click", accionPlayer);
+    document.getElementById("paper").addEventListener("click", accionPlayer);
+    document.getElementById("restart").addEventListener("click", reiniciar);
+}
+
+window.onload = main; 
